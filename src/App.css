@@ -65,3 +65,32 @@
   font-size: 20px;
   cursor: pointer;
 }
+
+.puntos {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.puntos>div{
+  border: 1px solid white;
+  border-radius: 0.3em;
+  width: 150px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5em;
+}
+
+.newgame{
+  width: 100px;
+  height: 40px;
+  border-radius: 0.3em;
+  font-size: 1em;
+  padding: 0.3em;
+  cursor: pointer;
+}
+

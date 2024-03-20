@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import Square from "./components/Square";
-import confeti from "canvas-confetti"
+import confeti from "canvas-confetti";
 
 function App() {
   const turns = {
@@ -18,10 +18,19 @@ function App() {
     return turnStorage ?? turns.X
   });
   const [winner, setWinner] = useState(null);
-  const [machine, setMachine] = useState(turns.O)
-  const [human, setHuman] = useState(turns.X)
-  const [pointX, setPointX] = useState(0)
-  const [pointO, setPointO] = useState(0)
+  const [pointX, setPointX] = useState(() => {
+    let pointXStorage = window.localStorage.getItem('pointX');
+    return pointXStorage ? parseInt(pointXStorage, 10) : 0;
+  });
+  const [pointO, setPointO] = useState(() => {
+    let pointOStorage = window.localStorage.getItem('pointO');
+    return pointOStorage ? parseInt(pointOStorage, 10) : 0;
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem('pointX', pointX.toString());
+    window.localStorage.setItem('pointO', pointO.toString());
+  }, [pointX, pointO]);
 
   const checkWinner = (boards) => {
     // Combinaciones horizontales
@@ -50,46 +59,69 @@ function App() {
   };
 
   const resetGame = () => {
-    setBoards(Array(9).fill(null))
-    setTurn(turns.X)
-    setWinner(null)
-    window.localStorage.removeItem('board')
-    window.localStorage.removeItem('TURNO')
-  }
+    setBoards(Array(9).fill(null));
+    setTurn(turns.X);
+    setWinner(null);
+    window.localStorage.removeItem('board');
+    window.localStorage.removeItem('TURNO');
+  };
 
-  const checkEndGame = (newboars) => {
-    return newboars.every((square) => square !== null)
-  }
-  
+  const checkEndGame = (newBoards) => {
+    return newBoards.every((square) => square !== null);
+  };
 
   const updateBoard = (index) => {
     //No actualizar en la posición si hay algo
-    if(boards[index] || winner) return
-    // Actializar el trablero
-    const newboars = [...boards]
-    newboars[index] = turn
-    setBoards(newboars)
-    // Saber en que turno esta 
-    const newTurn = turn === turns.X ? turns.O : turns.X
-    setTurn(newTurn)
+    if (boards[index] || winner) return;
+    // Actializar el tablero
+    const newBoards = [...boards];
+    newBoards[index] = turn;
+    setBoards(newBoards);
+    // Saber en qué turno está 
+    const newTurn = turn === turns.X ? turns.O : turns.X;
+    setTurn(newTurn);
     
-    //Guardar partoda y turno en caso de no terminar
-    window.localStorage.setItem('board', JSON.stringify(newboars))
-    window.localStorage.setItem('TURNO', newTurn)
+    //Guardar partida y turno en caso de no terminar
+    window.localStorage.setItem('board', JSON.stringify(newBoards));
+    window.localStorage.setItem('TURNO', newTurn);
 
-    const newWinnwer = checkWinner(newboars)
+    const newWinner = checkWinner(newBoards);
 
-    if(newWinnwer){
-      confeti()
-      setWinner(newWinnwer)
-    } else if (checkEndGame(newboars)){
-      setWinner(false)
+    if (newWinner) {
+      confeti();
+      setWinner(newWinner);
+      if (newWinner === turns.X) {
+        setPointX(pointX + 1);
+      } else if (newWinner === turns.O) {
+        setPointO(pointO + 1);
+      }
+    } else if (checkEndGame(newBoards)) {
+      setWinner(false);
     }
+  };
+
+  const newGame = (e) => {
+    setBoards(Array(9).fill(null));
+    setTurn(turns.X);
+    setWinner(null);
+    setPointX(0); 
+    setPointO(0);
+    window.localStorage.removeItem('board');
+    window.localStorage.removeItem('TURNO');
+    window.localStorage.removeItem('pointX')
+    window.localStorage.removeItem('pointO')
   }
 
   return (
     <div className="container">
       <h1>TIC TAC TOE</h1>
+      <section className="puntos">
+        <div><p>Puntos de <span>X</span></p> <p>{pointX}</p></div>
+        
+        <button onClick={newGame} className="newgame">New Game</button>
+  
+        <div><p>Puntos de <span>O</span></p> <p>{pointO}</p></div>
+      </section>
       <section className="board">
         {boards.map((_, index) => (
           <Square
@@ -98,34 +130,31 @@ function App() {
             updateBoard={updateBoard}
           >
             {boards[index]}
-            </Square>
+          </Square>
         ))}
       </section>
       <section>
         <span className="turn">Turno para <Square>{turn}</Square></span>
       </section>
 
-      {
-        winner !== null && (
-          <section className="winner">
-            <div className="text">
-              <h2>
-                {
-                  winner === false 
-                  ? "Empate"
-                  : "Ganador"
-                }
-              </h2>
-              <header className="win">
-                { winner && <Square>{winner}</Square>}
-              </header>
-              <footer>
-                <button className="button__reset" onClick={resetGame}>Empezar De Nuevo</button>
-              </footer>
-            </div>
-          </section>
-        )
-      }
+      {winner !== null && (
+        <section className="winner">
+          <div className="text">
+            <h2>
+              {winner === false 
+                ? "Empate"
+                : "Ganador"
+              }
+            </h2>
+            <header className="win">
+              { winner && <Square>{winner}</Square> }
+            </header>
+            <footer>
+              <button className="button__reset" onClick={resetGame}>Empezar De Nuevo</button>
+            </footer>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

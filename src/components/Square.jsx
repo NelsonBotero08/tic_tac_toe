@@ -1,7 +1,7 @@
 import React from 'react'
 import "./board.css"
 
-const Square = ({ children, index, updateBoard }) => {
+const Square = ({ children, index, updateBoard}) => {
 
 const handleTurn = () => {
     updateBoard(index)
@@ -12,6 +12,7 @@ const handleTurn = () => {
       <section className='square' onClick={handleTurn}>
         {children}
       </section>
+
     </div>
   )
 }
