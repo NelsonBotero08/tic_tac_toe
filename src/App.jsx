@@ -5,13 +5,23 @@ import confeti from "canvas-confetti"
 
 function App() {
   const turns = {
-    "X": "x",
-    "O": "o"
+    "X": "❌",
+    "O": "🔴"
   };
 
-  const [boards, setBoards] = useState(Array(9).fill(null));
-  const [turn, setTurn] = useState(turns.X);
-  const [winner, setWinner] = useState(null)
+  const [boards, setBoards] = useState(() => {
+    let boardStorage = window.localStorage.getItem('board')
+    return boardStorage ? JSON.parse(boardStorage) : Array(9).fill(null) 
+  });
+  const [turn, setTurn] = useState(() => {
+    let turnStorage = window.localStorage.getItem('TURNO')
+    return turnStorage ?? turns.X
+  });
+  const [winner, setWinner] = useState(null);
+  const [machine, setMachine] = useState(turns.O)
+  const [human, setHuman] = useState(turns.X)
+  const [pointX, setPointX] = useState(0)
+  const [pointO, setPointO] = useState(0)
 
   const checkWinner = (boards) => {
     // Combinaciones horizontales
@@ -43,6 +53,8 @@ function App() {
     setBoards(Array(9).fill(null))
     setTurn(turns.X)
     setWinner(null)
+    window.localStorage.removeItem('board')
+    window.localStorage.removeItem('TURNO')
   }
 
   const checkEndGame = (newboars) => {
@@ -57,10 +69,14 @@ function App() {
     const newboars = [...boards]
     newboars[index] = turn
     setBoards(newboars)
-    // Saber en ue turno esta 
+    // Saber en que turno esta 
     const newTurn = turn === turns.X ? turns.O : turns.X
     setTurn(newTurn)
     
+    //Guardar partoda y turno en caso de no terminar
+    window.localStorage.setItem('board', JSON.stringify(newboars))
+    window.localStorage.setItem('TURNO', newTurn)
+
     const newWinnwer = checkWinner(newboars)
 
     if(newWinnwer){
@@ -100,11 +116,9 @@ function App() {
                   : "Ganador"
                 }
               </h2>
-
               <header className="win">
                 { winner && <Square>{winner}</Square>}
               </header>
-
               <footer>
                 <button className="button__reset" onClick={resetGame}>Empezar De Nuevo</button>
               </footer>
